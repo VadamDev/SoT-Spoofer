@@ -7,7 +7,7 @@ namespace SoT_Spoofer
 {
     internal class TraceCleaner
     {
-        public static void ApplyCleaner()
+        public static void ApplyCleaner(bool spoofHardwareId)
         {
             DeleteKey(@"HKEY_CURRENT_USER\Software\Microsoft\IdentityCRL");
             DeleteKey(@"HKEY_USERS\.DEFAULT\Software\Microsoft\IdentityCRL");
@@ -17,9 +17,13 @@ namespace SoT_Spoofer
             DeleteCredentialsStartingWith("Xbl");
             DeleteCredentialsStartingWith("XboxLive");
 
-            SpoofProfileGUID();
-            SpoofMachineID();
-            SpoofMachineGUID();
+            if (spoofHardwareId)
+            {
+                Logger.Log("Spoofing HWID...");
+                SpoofProfileGUID();
+                SpoofMachineID();
+                SpoofMachineGUID();
+            }
         }
 
         public static void DeleteKey(string path)
