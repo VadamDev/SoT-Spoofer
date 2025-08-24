@@ -1,13 +1,12 @@
-﻿using Microsoft.Win32;
-using SoT_Spoofer.Wrappers;
-using System.Net;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+using Microsoft.Win32;
+using SotSpoofer.Wrappers;
 
-namespace SoT_Spoofer
-{
-    internal class TraceCleaner
+namespace SotSpoofer.Cleaner;
+
+internal class TraceCleaner
     {
-        public static void ApplyCleaner(bool spoofHardwareId)
+        public static void ApplyCleaner()
         {
             DeleteKey(@"HKEY_CURRENT_USER\Software\Microsoft\IdentityCRL");
             DeleteKey(@"HKEY_USERS\.DEFAULT\Software\Microsoft\IdentityCRL");
@@ -17,7 +16,7 @@ namespace SoT_Spoofer
             DeleteCredentialsStartingWith("Xbl");
             DeleteCredentialsStartingWith("XboxLive");
 
-            if (spoofHardwareId)
+            if(ShouldSpoofHWID())
             {
                 Logger.Log("Spoofing HWID...");
                 SpoofProfileGUID();
@@ -26,7 +25,34 @@ namespace SoT_Spoofer
             }
         }
 
-        public static void DeleteKey(string path)
+        private static bool ShouldSpoofHWID()
+        {
+            Logger.LogImportant("Should HWID be spoofed ? (y/n)");
+            Logger.LogWarning("Note: HWID spoofing might prevent you from being recognized by hwid protected software.");
+
+            bool result;
+            while(true)
+            {
+                switch (Console.ReadLine())
+                {
+                    case "y": case "yes":
+                        result = true;
+                        break;
+                    case "n": case "no":
+                        result = false;
+                        break;
+                    default:
+                        Logger.LogError("Invalid input! You must decide if the tool will try to spoof your HWID by typing \"y\" (yes) \"n\" (no)");
+                        continue;
+                }
+
+                break;
+            }
+
+            return result;
+        }
+
+        private static void DeleteKey(string path)
         {
             string Type = path.Split('\\')[0];
             string SubPath = path.Replace(Type + "\\", "");
@@ -86,7 +112,7 @@ namespace SoT_Spoofer
             registryKey.SetValue("MachineGuid", Guid.NewGuid().ToString());
         }
 
-        public static void DeleteCredentialsStartingWith(string prefix)
+        private static void DeleteCredentialsStartingWith(string prefix)
         {
             IntPtr pCredentials = IntPtr.Zero;
             int count = 0;
@@ -123,4 +149,3 @@ namespace SoT_Spoofer
             }
         }
     }
-}
